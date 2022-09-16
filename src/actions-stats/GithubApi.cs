@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
-using OctoshiftCLI.Extensions;
 
 namespace OctoshiftCLI
 {
@@ -14,9 +11,6 @@ namespace OctoshiftCLI
         private readonly GithubClient _client;
         private readonly string _apiUrl;
         private readonly RetryPolicy _retryPolicy;
-
-        private readonly Dictionary<string, string> _internalSchemaHeader =
-            new() { { "GraphQL-schema", "internal" } };
 
         public GithubApi(GithubClient client, string apiUrl, RetryPolicy retryPolicy)
         {
@@ -54,16 +48,6 @@ namespace OctoshiftCLI
             return await _client.GetAllAsync(url)
                                 .Select(al => ((int)al["id"], (string)al["key_prefix"], (string)al["url_template"]))
                                 .ToListAsync();
-        }
-
-        private void EnsureSuccessGraphQLResponse(JObject response)
-        {
-            if (response.TryGetValue("errors", out var jErrors) && jErrors is JArray { Count: > 0 } errors)
-            {
-                var error = (JObject)errors[0];
-                var errorMessage = error.TryGetValue("message", out var jMessage) ? (string)jMessage : null;
-                throw new OctoshiftCliException($"{errorMessage ?? "UNKNOWN"}");
-            }
         }
     }
 }

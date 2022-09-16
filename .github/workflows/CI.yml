@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner-os: [windows-latest, ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.runner-os }}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Initialize CodeQL
+      if: matrix.runner-os == 'ubuntu-latest'
+      uses: github/codeql-action/init@v1
+      with:
+        languages: 'csharp'
+        config-file: ./.github/codeql/codeql-config.yml
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: dotnet format
+      run: dotnet format src/ActionsStats.sln --verify-no-changes
+
+    - name: Restore dependencies
+      run: dotnet restore src/ActionsStats.sln
+
+    - name: Build
+      run: dotnet build src/ActionsStats.sln --no-restore /p:TreatWarningsAsErrors=true
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v1
+      if: matrix.runner-os == 'ubuntu-latest'
+
+  publish:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ build ]
+    environment: PUBLISH_RELEASE
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.RELEASE_NOTES_PAT }}
+        fetch-depth: 0
+
+    - name: Validate tag on main
+      shell: pwsh
+      run: |
+        git checkout main
+        $mainsha = $(git show-ref refs/heads/main --hash)
+        $tagsha = $(git show-ref ${{ github.ref }} --hash)
+
+        Write-Output "refs/heads/main: $mainsha"
+        Write-Output "${{ github.ref }}: $tagsha"
+
+        if ($mainsha -ne $tagsha) {
+          Write-Error "tag must match HEAD of main"
+          exit 1
+        }
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Build Artifacts
+      run: ./publish.ps1
+      shell: pwsh
+      env:
+        CLI_VERSION: ${{ github.ref }}
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: ./RELEASENOTES.md
+        files: |
+          ./dist/win-x64/actions-stats-windows-amd64.exe
+          ./dist/linux-x64/actions-stats-linux-amd64
+          ./dist/osx-x64/actions-stats-darwin-amd64
+    
+    - name: Archive Release Notes
+      shell: pwsh
+      run: |
+        $TAG_NAME = "${{ github.ref }}".Substring(10)
+        Get-Content ./RELEASENOTES.md | Out-File -FilePath ./releasenotes/$TAG_NAME.md
+        "" | Out-File ./RELEASENOTES.md
+        
+    - name: Update LATEST-VERSION.TXT
+      shell: pwsh
+      run: |
+        $TAG_NAME = "${{ github.ref }}".Substring(10)
+        $TAG_NAME | Out-File ./LATEST-VERSION.txt
+        
+    - name: Commit Release Notes and Version
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Automated commit of archived release notes and version file [skip ci]
+        file_pattern: RELEASENOTES.md releasenotes/*.md LATEST-VERSION.txt
+        branch: main

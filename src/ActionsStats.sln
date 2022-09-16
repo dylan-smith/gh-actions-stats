@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7AE2DD08-9B89-4B29-89B1-AEFA50169EE3}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		..\RELEASENOTES.md = ..\RELEASENOTES.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "actions-stats", "actions-stats\actions-stats.csproj", "{39EE734C-AC4A-42AC-801A-ECCA661C23A1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{39EE734C-AC4A-42AC-801A-ECCA661C23A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39EE734C-AC4A-42AC-801A-ECCA661C23A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39EE734C-AC4A-42AC-801A-ECCA661C23A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39EE734C-AC4A-42AC-801A-ECCA661C23A1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {89033643-B40D-43DB-B162-B1A7D935831C}
+	EndGlobalSection
+EndGlobal

@@ -1,4 +1,4 @@
-﻿namespace OctoshiftCLI.Contracts;
+﻿namespace ActionsStats;
 
 public interface IVersionProvider
 {

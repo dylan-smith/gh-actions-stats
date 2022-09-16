@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace OctoshiftCLI;
+namespace ActionsStats;
 
 public class FileSystemProvider
 {

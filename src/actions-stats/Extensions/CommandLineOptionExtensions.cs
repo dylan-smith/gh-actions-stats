@@ -1,6 +1,6 @@
 using System.CommandLine;
 
-namespace OctoshiftCLI.Extensions;
+namespace ActionsStats.Extensions;
 
 public static class CommandLineOptionExtensions
 {

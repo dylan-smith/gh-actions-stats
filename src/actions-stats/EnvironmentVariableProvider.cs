@@ -1,9 +1,6 @@
 using System;
-using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleToAttribute("OctoshiftCLI.Tests")]
-
-namespace OctoshiftCLI.BbsToGithub;
+namespace ActionsStats;
 
 public class EnvironmentVariableProvider
 {
@@ -28,19 +25,19 @@ public class EnvironmentVariableProvider
 
     public virtual string GithubPersonalAccessToken() =>
             GetSecret(GH_PAT)
-            ?? throw new OctoshiftCliException($"{GH_PAT} environment variable is not set.");
+            ?? throw new ActionStatsException($"{GH_PAT} environment variable is not set.");
 
     public virtual string BbsUsername() =>
             GetSecret(BBS_USERNAME)
-            ?? throw new OctoshiftCliException($"{BBS_USERNAME} environment variable is not set.");
+            ?? throw new ActionStatsException($"{BBS_USERNAME} environment variable is not set.");
 
     public virtual string BbsPassword() =>
             GetSecret(BBS_PASSWORD)
-            ?? throw new OctoshiftCliException($"{BBS_PASSWORD} environment variable is not set.");
+            ?? throw new ActionStatsException($"{BBS_PASSWORD} environment variable is not set.");
 
     public virtual string AzureStorageConnectionString() =>
             GetSecret(AZURE_STORAGE_CONNECTION_STRING)
-            ?? throw new OctoshiftCliException($"{AZURE_STORAGE_CONNECTION_STRING} environment variable is not set.");
+            ?? throw new ActionStatsException($"{AZURE_STORAGE_CONNECTION_STRING} environment variable is not set.");
 
     private string GetSecret(string secretName)
     {

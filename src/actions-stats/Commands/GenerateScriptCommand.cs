@@ -3,10 +3,9 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
 using System.Threading.Tasks;
-using OctoshiftCLI.Contracts;
-using OctoshiftCLI.Extensions;
+using ActionsStats.Extensions;
 
-namespace OctoshiftCLI.BbsToGithub.Commands;
+namespace ActionsStats.Commands;
 
 public class GenerateScriptCommand : Command
 {

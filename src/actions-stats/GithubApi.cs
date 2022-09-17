@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 namespace ActionsStats;
 
@@ -18,34 +19,25 @@ public class GithubApi
         _retryPolicy = retryPolicy;
     }
 
-    public virtual async Task AddAutoLink(string org, string repo, string keyPrefix, string urlTemplate)
+    public virtual async Task<int> GetWorkflowId(string org, string repo, string workflowName)
     {
-        if (string.IsNullOrWhiteSpace(keyPrefix))
-        {
-            throw new ArgumentException($"Invalid value for {nameof(keyPrefix)}");
-        }
-        if (string.IsNullOrWhiteSpace(urlTemplate))
-        {
-            throw new ArgumentException($"Invalid value for {nameof(urlTemplate)}");
-        }
+        var url = $"{_apiUrl}/repos/{org}/{repo}/actions/workflows";
 
-        var url = $"{_apiUrl}/repos/{org}/{repo}/autolinks";
+        var data = await _client.GetAllAsync(url, x => (JArray)x["workflows"]);
 
-        var payload = new
-        {
-            key_prefix = keyPrefix,
-            url_template = urlTemplate.Replace(" ", "%20")
-        };
-
-        await _client.PostAsync(url, payload);
+        return (int)data.First(x => ((string)x["name"]).Equals(workflowName, StringComparison.OrdinalIgnoreCase))["id"];
     }
 
-    public virtual async Task<List<(int Id, string KeyPrefix, string UrlTemplate)>> GetAutoLinks(string org, string repo)
+    public virtual async Task<IEnumerable<(string Org, string Repo, int WorkflowId, string WorkflowName, string Actor, DateTime RunDate, string Conclusion)>> GetWorkflowRuns(string org, string repo, int workflowId, string actor)
     {
-        var url = $"{_apiUrl}/repos/{org}/{repo}/autolinks";
+        var url = $"{_apiUrl}/repos/{org}/{repo}/actions/runs";
 
-        return await _client.GetAllAsync(url)
-                            .Select(al => ((int)al["id"], (string)al["key_prefix"], (string)al["url_template"]))
-                            .ToListAsync();
+        var data = await _client.GetAllAsync(
+            url,
+            x => (JArray)x["workflow_runs"],
+            x => (int)x["workflow_id"] == workflowId && (actor is null || (string)x["actor"]["login"] == actor),
+        x => (Org: org, Repo: repo, WorkflowId: workflowId, WorkflowName: (string)x["name"], Actor: (string)x["actor"]["login"], RunDate: (DateTime)x["created_at"], Conclusion: (string)x["conclusion"]));
+
+        return data;
     }
 }

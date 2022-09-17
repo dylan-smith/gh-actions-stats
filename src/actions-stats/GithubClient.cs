@@ -48,19 +48,78 @@ public class GithubClient
         return content;
     }
 
-    public virtual async IAsyncEnumerable<JToken> GetAllAsync(string url, Dictionary<string, string> customHeaders = null)
-    {
-        var nextUrl = url;
-        do
-        {
-            var (content, headers) = await SendAsync(HttpMethod.Get, nextUrl, customHeaders: customHeaders);
-            foreach (var jToken in JArray.Parse(content))
-            {
-                yield return jToken;
-            }
+    //public virtual async IAsyncEnumerable<JToken> GetAllAsync(string url, Dictionary<string, string> customHeaders = null)
+    //{
+    //    var nextUrl = url;
+    //    do
+    //    {
+    //        var (content, headers) = await SendAsync(HttpMethod.Get, nextUrl, customHeaders: customHeaders);
+    //        foreach (var jToken in JArray.Parse(content))
+    //        {
+    //            yield return jToken;
+    //        }
 
-            nextUrl = GetNextUrl(headers);
-        } while (nextUrl != null);
+    //        nextUrl = GetNextUrl(headers);
+    //    } while (nextUrl != null);
+    //}
+
+    public virtual async Task<JArray> GetAllAsync(string url, Func<JToken, JArray> data)
+    {
+        if (data is null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
+
+        var page = 1;
+
+        var (content, _) = await SendAsync(HttpMethod.Get, $"{url}?page={page}&per_page=100");
+
+        var results = data(JObject.Parse(content));
+        var totalCount = (int)JObject.Parse(content)["total_count"];
+
+        while (results.Count < totalCount && results.Count < 3000)
+        {
+            page++;
+
+            _log.LogInformation($"Retrieving Page {page} / {Math.Ceiling(totalCount / 100.0)}...");
+            (content, _) = await SendAsync(HttpMethod.Get, $"{url}?page={page}&per_page=100");
+            var newResults = data(JObject.Parse(content));
+            results = new JArray(results.Union(newResults));
+        }
+
+        return results;
+    }
+
+    public virtual async Task<IEnumerable<T>> GetAllAsync<T>(string url, Func<JToken, JArray> data, Func<JToken, bool> predicate, Func<JToken, T> selector)
+    {
+        if (data is null)
+        {
+            throw new ArgumentNullException(nameof(data));
+        }
+
+        var page = 1;
+
+        var (content, _) = await SendAsync(HttpMethod.Get, $"{url}?page={page}&per_page=100");
+
+        var results = data(JObject.Parse(content))
+            .Where(predicate)
+            .Select(selector).ToList();
+        var totalCount = (int)JObject.Parse(content)["total_count"];
+
+        while ((page * 100) < totalCount)
+        {
+            page++;
+
+            _log.LogInformation($"Retrieving Page {page} / {Math.Ceiling(totalCount / 100.0)}...");
+
+            (content, _) = await SendAsync(HttpMethod.Get, $"{url}?page={page}&per_page=100");
+            var newResults = data(JObject.Parse(content))
+                .Where(predicate)
+                .Select(selector).ToList();
+            results = results.Union(newResults).ToList();
+        }
+
+        return results;
     }
 
     public virtual async Task<string> PostAsync(string url, object body, Dictionary<string, string> customHeaders = null) =>
@@ -144,7 +203,7 @@ public class GithubClient
 
         _log.LogVerbose($"GITHUB REQUEST ID: {ExtractHeaderValue("X-GitHub-Request-Id", response.Headers)}");
         var content = await response.Content.ReadAsStringAsync();
-        _log.LogVerbose($"RESPONSE ({response.StatusCode}): {content}");
+        _log.LogVerbose($"RESPONSE ({response.StatusCode}): ...");
 
         foreach (var header in response.Headers)
         {

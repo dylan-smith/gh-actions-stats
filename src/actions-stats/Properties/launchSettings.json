@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "actions-stats": {
+      "commandName": "Project",
+      "commandLineArgs": "get-runs --org github --repo Octoshift --workflow-name \"Regression Tests\" --actor jfine --github-pat \"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\""
+    }
+  }
+}

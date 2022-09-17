@@ -109,7 +109,7 @@ public class OctoLogger
             throw new ArgumentNullException(nameof(ex));
         }
 
-        var logMessage = Verbose ? ex.ToString() : ex is ActionStatsException ? ex.Message : GENERIC_ERROR_MESSAGE;
+        var logMessage = Verbose ? ex.ToString() : ex is ActionsStatsException ? ex.Message : GENERIC_ERROR_MESSAGE;
         var output = MaskSecrets(FormatMessage(logMessage, LogLevel.ERROR));
 
         Console.ForegroundColor = ConsoleColor.Red;

@@ -92,7 +92,7 @@ public static class Program
 
     private static IServiceCollection AddCommands(this IServiceCollection services)
     {
-        var sampleCommandType = typeof(GenerateScriptCommand);
+        var sampleCommandType = typeof(GetRunsCommand);
         var commandType = typeof(Command);
 
         var commands = sampleCommandType

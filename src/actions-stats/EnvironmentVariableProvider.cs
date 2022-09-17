@@ -25,19 +25,19 @@ public class EnvironmentVariableProvider
 
     public virtual string GithubPersonalAccessToken() =>
             GetSecret(GH_PAT)
-            ?? throw new ActionStatsException($"{GH_PAT} environment variable is not set.");
+            ?? throw new ActionsStatsException($"{GH_PAT} environment variable is not set.");
 
     public virtual string BbsUsername() =>
             GetSecret(BBS_USERNAME)
-            ?? throw new ActionStatsException($"{BBS_USERNAME} environment variable is not set.");
+            ?? throw new ActionsStatsException($"{BBS_USERNAME} environment variable is not set.");
 
     public virtual string BbsPassword() =>
             GetSecret(BBS_PASSWORD)
-            ?? throw new ActionStatsException($"{BBS_PASSWORD} environment variable is not set.");
+            ?? throw new ActionsStatsException($"{BBS_PASSWORD} environment variable is not set.");
 
     public virtual string AzureStorageConnectionString() =>
             GetSecret(AZURE_STORAGE_CONNECTION_STRING)
-            ?? throw new ActionStatsException($"{AZURE_STORAGE_CONNECTION_STRING} environment variable is not set.");
+            ?? throw new ActionsStatsException($"{AZURE_STORAGE_CONNECTION_STRING} environment variable is not set.");
 
     private string GetSecret(string secretName)
     {

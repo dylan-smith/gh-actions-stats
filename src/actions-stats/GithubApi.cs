@@ -35,7 +35,7 @@ public class GithubApi
         var data = await _client.GetAllAsync(
             url,
             x => (JArray)x["workflow_runs"],
-            x => (int)x["workflow_id"] == workflowId && (actor is null || (string)x["actor"]["login"] == actor),
+            x => (int)x["workflow_id"] == workflowId && (actor is null || (string)x["actor"]["login"] == actor) && (string)x["head_branch"] == "main",
         x => (Org: org, Repo: repo, WorkflowId: workflowId, WorkflowName: (string)x["name"], Actor: (string)x["actor"]["login"], RunDate: (DateTime)x["created_at"], Conclusion: (string)x["conclusion"]));
 
         return data;

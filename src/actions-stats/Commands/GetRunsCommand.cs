@@ -54,7 +54,7 @@ public class GetRunsCommand : Command
             IsRequired = false,
             Description = "Can also be provided using the GH_PAT environment variable."
         };
-        var output = new Option<FileInfo>("--output", () => new FileInfo("./migrate.ps1")) { IsRequired = false };
+        var output = new Option<FileInfo>("--output", () => new FileInfo("./actions-runs.csv")) { IsRequired = false };
         var verbose = new Option<bool>("--verbose") { IsRequired = false };
 
         AddOption(org);
@@ -82,6 +82,8 @@ public class GetRunsCommand : Command
 
         LogOptions(args);
         ValidateOptions(args);
+
+        args.GithubPat = args.GithubPat.HasValue() ? args.GithubPat : _environmentVariableProvider.GithubPersonalAccessToken();
 
         _log.RegisterSecret(args.GithubPat);
 

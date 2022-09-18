@@ -39,8 +39,10 @@ public class OctoLogger
             _debugMode = true;
         }
 
-        _writeToLog = msg => File.AppendAllText(_logFilePath, msg);
-        _writeToVerboseLog = msg => File.AppendAllText(_verboseFilePath, msg);
+        //_writeToLog = msg => File.AppendAllText(_logFilePath, msg);
+        //_writeToVerboseLog = msg => File.AppendAllText(_verboseFilePath, msg);
+        _writeToLog = msg => { }; // this turns off writing to the log file
+        _writeToVerboseLog = msg => { }; // this turns off writing to the log file
         _writeToConsoleOut = msg => Console.Write(msg);
         _writeToConsoleError = msg => Console.Error.Write(msg);
     }

@@ -5,6 +5,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>actions-stats</AssemblyName>
     <LangVersion>10</LangVersion>
+    <RootNamespace>ActionsStats</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ActionsStats.Extensions;
+using ActionsStats.Models;
 
 namespace ActionsStats.Commands;
 
@@ -55,6 +56,11 @@ public class GetRunsCommand : Command
             Description = "Can also be provided using the GH_PAT environment variable."
         };
         var output = new Option<FileInfo>("--output", () => new FileInfo("./actions-runs.csv")) { IsRequired = false };
+        var sqlConnectionString = new Option<string>("--sql-connection-string")
+        {
+            IsRequired = false,
+            Description = "SQL Server connection string for where to write the data",
+        };
         var verbose = new Option<bool>("--verbose") { IsRequired = false };
 
         AddOption(org);
@@ -64,6 +70,7 @@ public class GetRunsCommand : Command
         AddOption(actor);
         AddOption(githubPat);
         AddOption(output);
+        AddOption(sqlConnectionString);
         AddOption(verbose);
 
         Handler = CommandHandler.Create<GetRunsCommandArgs>(Invoke);
@@ -84,8 +91,10 @@ public class GetRunsCommand : Command
         ValidateOptions(args);
 
         args.GithubPat = args.GithubPat.HasValue() ? args.GithubPat : _environmentVariableProvider.GithubPersonalAccessToken();
+        args.SqlConnectionString = args.SqlConnectionString.HasValue() ? args.SqlConnectionString : _environmentVariableProvider.SqlConnectionString();
 
         _log.RegisterSecret(args.GithubPat);
+        _log.RegisterSecret(args.SqlConnectionString);
 
         var api = _apiFactory.Create(apiUrl: null, args.GithubPat);
 
@@ -104,15 +113,15 @@ public class GetRunsCommand : Command
         }
     }
 
-    private string GenerateCsv(IEnumerable<(string Org, string Repo, int WorkflowId, string WorkflowName, string Actor, DateTime RunDate, string Conclusion)> runs)
+    private string GenerateCsv(IEnumerable<WorkflowRun> runs)
     {
         var result = new StringBuilder();
 
         result.AppendLine("org,repo,workflow-id,workflow-name,actor,date,conclusion");
 
-        foreach (var (Org, Repo, WorkflowId, WorkflowName, Actor, RunDate, Conclusion) in runs)
+        foreach (var run in runs)
         {
-            result.AppendLine($"\"{Org}\",\"{Repo}\",{WorkflowId},\"{WorkflowName}\",\"{Actor}\",\"{RunDate:dd-MMM-yyyy hh:mm tt}\",\"{Conclusion}\"");
+            result.AppendLine($"\"{run.Org}\",\"{run.Repo}\",{run.WorkflowId},\"{run.WorkflowName}\",\"{run.Actor}\",\"{run.RunDate:dd-MMM-yyyy hh:mm tt}\",\"{run.Conclusion}\"");
         }
 
         return result.ToString();
@@ -167,5 +176,6 @@ public class GetRunsCommandArgs
     public string Actor { get; set; }
     public string GithubPat { get; set; }
     public FileInfo Output { get; set; }
+    public string SqlConnectionString { get; set; }
     public bool Verbose { get; set; }
 }

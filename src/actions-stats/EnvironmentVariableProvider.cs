@@ -5,6 +5,7 @@ namespace ActionsStats;
 public class EnvironmentVariableProvider
 {
     private const string GH_PAT = "GH_PAT";
+    private const string SQL_CONNECTION_STRING = "SQL_CONNECTION_STRING";
     private readonly OctoLogger _logger;
     private readonly Func<string, string> _getEnvironmentVariable;
 
@@ -21,6 +22,8 @@ public class EnvironmentVariableProvider
     public virtual string GithubPersonalAccessToken() =>
             GetSecret(GH_PAT)
             ?? throw new ActionsStatsException($"{GH_PAT} environment variable is not set.");
+
+    public virtual string SqlConnectionString() => GetSecret(SQL_CONNECTION_STRING);
 
     private string GetSecret(string secretName)
     {

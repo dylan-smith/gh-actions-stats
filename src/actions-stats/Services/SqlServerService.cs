@@ -48,6 +48,11 @@ public class SqlServerService : IDisposable
 
     public virtual IEnumerable<DataRow> GetDataTable(string sql, params object[] sqlArgs)
     {
+        if (sqlArgs is null)
+        {
+            throw new ArgumentNullException(nameof(sqlArgs));
+        }
+
         using var myCommand = PrepareCommand(sql, sqlArgs);
 
         using var result = new DataTable();
@@ -77,6 +82,11 @@ public class SqlServerService : IDisposable
 
     public async Task<IEnumerable<DataRow>> GetDataTableAsync(string sql, params object[] sqlArgs)
     {
+        if (sqlArgs is null)
+        {
+            throw new ArgumentNullException(nameof(sqlArgs));
+        }
+
         using var myCommand = PrepareCommand(sql, sqlArgs);
 
         using var result = new DataTable();
@@ -158,6 +168,11 @@ public class SqlServerService : IDisposable
 
     public int ExecuteNonQuery(string sql, params object[] sqlArgs)
     {
+        if (sqlArgs is null)
+        {
+            throw new ArgumentNullException(nameof(sqlArgs));
+        }
+
         using var myCommand = PrepareCommand(sql, sqlArgs);
         var result = default(int);
 
@@ -173,6 +188,11 @@ public class SqlServerService : IDisposable
 
     public async Task<int> ExecuteNonQueryAsync(string sql, params object[] sqlArgs)
     {
+        if (sqlArgs is null)
+        {
+            throw new ArgumentNullException(nameof(sqlArgs));
+        }
+
         using var myCommand = PrepareCommand(sql, sqlArgs);
         var result = default(int);
 
@@ -188,6 +208,11 @@ public class SqlServerService : IDisposable
 
     public object ExecuteScalar(string sql, params object[] sqlArgs)
     {
+        if (sqlArgs is null)
+        {
+            throw new ArgumentNullException(nameof(sqlArgs));
+        }
+
         using var myCommand = PrepareCommand(sql, sqlArgs);
         var result = default(object);
 
@@ -203,6 +228,11 @@ public class SqlServerService : IDisposable
 
     public async Task<object> ExecuteScalarAsync(string sql, params object[] sqlArgs)
     {
+        if (sqlArgs is null)
+        {
+            throw new ArgumentNullException(nameof(sqlArgs));
+        }
+
         using var myCommand = PrepareCommand(sql, sqlArgs);
         var result = default(object);
 

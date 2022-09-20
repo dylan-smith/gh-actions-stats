@@ -26,7 +26,7 @@ jobs:
         SKIP_MACOS: true
 
     - name: Run for CLI
-      run: actions-stats-windows-amd64.exe get-runs --org github --repo gh-gei --workflow-name CI
+      run: .\actions-stats-windows-amd64.exe get-runs --org github --repo gh-gei --workflow-name CI
       working-directory: ./dist/win-x64/
       shell: pwsh
       env:

@@ -14,7 +14,7 @@ public class SqlServerService : IDisposable
     private SqlTransaction _transaction;
     private bool _disposedValue;
     private string _connectionString;
-    private OctoLogger _log;
+    private readonly OctoLogger _log;
 
     public SqlServerService(OctoLogger octoLogger, string connectionString)
     {
@@ -317,7 +317,7 @@ public class SqlServerService : IDisposable
     {
         if (string.IsNullOrWhiteSpace(sql))
         {
-            throw new ArgumentException("The SQL statement was blank. A valid SQL Statement must be provided.", "sql");
+            throw new ArgumentException("The SQL statement was blank. A valid SQL Statement must be provided.", nameof(sql));
         }
 
         var myCommand = new SqlCommand(sql, _connection);

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ActionsStats.Extensions;
 using Newtonsoft.Json.Linq;
@@ -177,28 +176,6 @@ public class GithubClient
 
         return (content, response.Headers.ToArray());
     }
-
-    private string GetNextUrl(KeyValuePair<string, IEnumerable<string>>[] headers)
-    {
-        var linkHeaderValue = ExtractLinkHeader(headers);
-
-        var nextUrl = linkHeaderValue?
-            .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-            .Select(link =>
-            {
-                var rx = new Regex(@"<(?<url>.+)>;\s*rel=""(?<rel>.+)""");
-                var url = rx.Match(link).Groups["url"].Value;
-                var rel = rx.Match(link).Groups["rel"].Value; // first, next, last, prev
-
-                return (Url: url, Rel: rel);
-            })
-            .FirstOrDefault(x => x.Rel == "next").Url;
-
-        return nextUrl;
-    }
-
-    private string ExtractLinkHeader(IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers) =>
-        ExtractHeaderValue("Link", headers);
 
     private string ExtractHeaderValue(string key, IEnumerable<KeyValuePair<string, IEnumerable<string>>> headers) =>
         headers.SingleOrDefault(kvp => kvp.Key.Equals(key, StringComparison.OrdinalIgnoreCase)).Value?.FirstOrDefault();

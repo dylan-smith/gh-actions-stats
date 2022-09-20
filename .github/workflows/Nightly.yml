@@ -1,0 +1,34 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron:  '0 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Build Artifacts
+      run: ./publish.ps1
+      shell: pwsh
+      env:
+        CLI_VERSION: ${{ github.ref }}
+        SKIP_WINDOWS: true
+        SKIP_MACOS: true
+
+    - name: Run for CLI
+      run: actions-stats-linux-amd64 get-runs --org github --repo gh-gei --workflow-name CI
+      working-directory: ./dist/linux-x64/
+      shell: pwsh
+      env:
+        GH_PAT: ${{ secrets.CLI_PAT }}
+        SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}

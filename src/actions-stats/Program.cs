@@ -29,6 +29,7 @@ public static class Program
             .AddSingleton<VersionChecker>()
             .AddSingleton<FileSystemProvider>()
             .AddSingleton<IVersionProvider, VersionChecker>(sp => sp.GetRequiredService<VersionChecker>())
+            .AddSingleton<SqlServerServiceFactory>()
             .AddHttpClient();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();

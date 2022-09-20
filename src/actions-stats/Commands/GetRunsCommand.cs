@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Data;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using ActionsStats.Extensions;
 using ActionsStats.Models;
+using ActionStats.Services;
 
 namespace ActionsStats.Commands;
 
@@ -17,19 +19,22 @@ public class GetRunsCommand : Command
     private readonly FileSystemProvider _fileSystemProvider;
     private readonly EnvironmentVariableProvider _environmentVariableProvider;
     private readonly GithubApiFactory _apiFactory;
+    private readonly SqlServerServiceFactory _sqlServerServiceFactory;
 
     public GetRunsCommand(
         OctoLogger log,
         IVersionProvider versionProvider,
         FileSystemProvider fileSystemProvider,
         EnvironmentVariableProvider environmentVariableProvider,
-        GithubApiFactory apiFactory) : base("get-runs")
+        GithubApiFactory apiFactory,
+        SqlServerServiceFactory sqlServerServiceFactory) : base("get-runs")
     {
         _log = log;
         _versionProvider = versionProvider;
         _fileSystemProvider = fileSystemProvider;
         _environmentVariableProvider = environmentVariableProvider;
         _apiFactory = apiFactory;
+        _sqlServerServiceFactory = sqlServerServiceFactory;
 
         Description = "Gets a list of all workflow runs and outputs it to a CSV file";
 
@@ -50,6 +55,11 @@ public class GetRunsCommand : Command
             IsRequired = false,
             Description = "Filter workflow runs by the actor associated with the runs."
         };
+        var branch = new Option<string>("--branch")
+        {
+            IsRequired = false,
+            Description = "Branch to filter by."
+        };
         var githubPat = new Option<string>("--github-pat")
         {
             IsRequired = false,
@@ -68,6 +78,7 @@ public class GetRunsCommand : Command
         AddOption(workflowId);
         AddOption(workflowName);
         AddOption(actor);
+        AddOption(branch);
         AddOption(githubPat);
         AddOption(output);
         AddOption(sqlConnectionString);
@@ -103,7 +114,7 @@ public class GetRunsCommand : Command
             args.WorkflowId = await api.GetWorkflowId(args.Org, args.Repo, args.WorkflowName);
         }
 
-        var runs = await api.GetWorkflowRuns(args.Org, args.Repo, args.WorkflowId, args.Actor);
+        var runs = await api.GetWorkflowRuns(args.Org, args.Repo, args.WorkflowId, args.Actor, args.Branch);
 
         var csv = GenerateCsv(runs);
 
@@ -111,6 +122,68 @@ public class GetRunsCommand : Command
         {
             await _fileSystemProvider.WriteAllTextAsync(args.Output.FullName, csv);
         }
+
+        if (args.SqlConnectionString.HasValue())
+        {
+            var db = _sqlServerServiceFactory.Create(args.SqlConnectionString);
+            WriteToDatabase(runs, db, args.WorkflowId);
+        }
+    }
+
+    private void WriteToDatabase(IEnumerable<WorkflowRun> runs, SqlServerService db, long workflowId)
+    {
+        using var runsTable = CreateWorkflowRunsTable();
+
+        foreach (var run in runs)
+        {
+            InsertRowToRunsDataTable(runsTable, run);
+        }
+
+        Console.WriteLine("Deleting old data: WorkflowRuns...");
+        db.ExecuteNonQuery("DELETE FROM WorkflowRuns WHERE WorkflowId = @WorkflowId", "@WorkflowId", workflowId);
+        Console.WriteLine("Writing data: WorkflowRuns...");
+        db.BulkCopy(runsTable);
+        Console.WriteLine("Done!");
+    }
+
+    private static void InsertRowToRunsDataTable(DataTable table, WorkflowRun run)
+    {
+        var newRow = table.NewRow();
+
+        newRow["Id"] = run.Id;
+        newRow["RunNumber"] = run.RunNumber;
+        newRow["Org"] = run.Org;
+        newRow["Repo"] = run.Repo;
+        newRow["WorkflowId"] = run.WorkflowId;
+        newRow["WorkflowName"] = run.WorkflowName;
+        newRow["Actor"] = run.Actor;
+        newRow["Branch"] = run.Branch;
+        newRow["Event"] = run.Event;
+        newRow["RunDate"] = run.RunDate;
+        newRow["Conclusion"] = run.Conclusion is null ? DBNull.Value : run.Conclusion;
+        newRow["Url"] = run.Url;
+
+        table.Rows.Add(newRow);
+    }
+
+    private static DataTable CreateWorkflowRunsTable()
+    {
+        var result = new DataTable("WorkflowRuns");
+
+        result.Columns.Add("Id", typeof(long));
+        result.Columns.Add("RunNumber", typeof(long));
+        result.Columns.Add("Org", typeof(string));
+        result.Columns.Add("Repo", typeof(string));
+        result.Columns.Add("WorkflowId", typeof(long));
+        result.Columns.Add("WorkflowName", typeof(string));
+        result.Columns.Add("Actor", typeof(string));
+        result.Columns.Add("Branch", typeof(string));
+        result.Columns.Add("Event", typeof(string));
+        result.Columns.Add("RunDate", typeof(DateTime));
+        result.Columns.Add("Conclusion", typeof(string));
+        result.Columns.Add("Url", typeof(string));
+
+        return result;
     }
 
     private string GenerateCsv(IEnumerable<WorkflowRun> runs)
@@ -155,6 +228,11 @@ public class GetRunsCommand : Command
             _log.LogInformation($"ACTOR: {args.Actor}");
         }
 
+        if (args.Branch.HasValue())
+        {
+            _log.LogInformation($"BRANCH: {args.Branch}");
+        }
+
         if (args.GithubPat.HasValue())
         {
             _log.LogInformation("GITHUB PAT: ***");
@@ -171,9 +249,10 @@ public class GetRunsCommandArgs
 {
     public string Org { get; set; }
     public string Repo { get; set; }
-    public int WorkflowId { get; set; }
+    public long WorkflowId { get; set; }
     public string WorkflowName { get; set; }
     public string Actor { get; set; }
+    public string Branch { get; set; }
     public string GithubPat { get; set; }
     public FileInfo Output { get; set; }
     public string SqlConnectionString { get; set; }

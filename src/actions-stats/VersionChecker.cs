@@ -42,7 +42,6 @@ public class VersionChecker : IVersionProvider
     {
         if (_latestVersion.IsNullOrWhiteSpace())
         {
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OctoshiftCLI", GetCurrentVersion()));
             if (GetVersionComments() is { } comments)
             {
                 _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(comments));

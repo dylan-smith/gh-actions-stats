@@ -26,9 +26,7 @@ public class GithubClient
         if (_httpClient != null)
         {
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
-            _httpClient.DefaultRequestHeaders.Add("GraphQL-Features", "import_api,mannequin_claiming");
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", personalAccessToken);
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("OctoshiftCLI", versionProvider?.GetCurrentVersion()));
             if (versionProvider?.GetVersionComments() is { } comments)
             {
                 _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(comments));
@@ -46,48 +44,6 @@ public class GithubClient
         );
 
         return content;
-    }
-
-    //public virtual async IAsyncEnumerable<JToken> GetAllAsync(string url, Dictionary<string, string> customHeaders = null)
-    //{
-    //    var nextUrl = url;
-    //    do
-    //    {
-    //        var (content, headers) = await SendAsync(HttpMethod.Get, nextUrl, customHeaders: customHeaders);
-    //        foreach (var jToken in JArray.Parse(content))
-    //        {
-    //            yield return jToken;
-    //        }
-
-    //        nextUrl = GetNextUrl(headers);
-    //    } while (nextUrl != null);
-    //}
-
-    public virtual async Task<JArray> GetAllAsync(string url, Func<JToken, JArray> data)
-    {
-        if (data is null)
-        {
-            throw new ArgumentNullException(nameof(data));
-        }
-
-        var page = 1;
-
-        var (content, _) = await SendAsync(HttpMethod.Get, $"{url}?page={page}&per_page=100");
-
-        var results = data(JObject.Parse(content));
-        var totalCount = (int)JObject.Parse(content)["total_count"];
-
-        while (results.Count < totalCount && results.Count < 3000)
-        {
-            page++;
-
-            _log.LogInformation($"Retrieving Page {page} / {Math.Ceiling(totalCount / 100.0)}...");
-            (content, _) = await SendAsync(HttpMethod.Get, $"{url}?page={page}&per_page=100");
-            var newResults = data(JObject.Parse(content));
-            results = new JArray(results.Union(newResults));
-        }
-
-        return results;
     }
 
     public virtual async Task<IEnumerable<T>> GetAllAsync<T>(string url, Func<JToken, JArray> data, Func<JToken, bool> predicate, Func<JToken, T> selector)

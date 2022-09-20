@@ -24,19 +24,19 @@ public class GithubApi
     {
         var url = $"{_apiUrl}/repos/{org}/{repo}/actions/workflows";
 
-        var data = await _client.GetAllAsync(url, x => (JArray)x["workflows"]);
+        var data = await _client.GetAllAsync(url, x => (JArray)x["workflows"], _ => true, x => (Name: (string)x["name"], Id: (int)x["id"]));
 
-        return (int)data.First(x => ((string)x["name"]).Equals(workflowName, StringComparison.OrdinalIgnoreCase))["id"];
+        return data.First(x => x.Name.Equals(workflowName, StringComparison.OrdinalIgnoreCase)).Id;
     }
 
-    public virtual async Task<IEnumerable<WorkflowRun>> GetWorkflowRuns(string org, string repo, int workflowId, string actor)
+    public virtual async Task<IEnumerable<WorkflowRun>> GetWorkflowRuns(string org, string repo, long workflowId, string actor, string branch)
     {
         var url = $"{_apiUrl}/repos/{org}/{repo}/actions/runs";
 
         var data = await _client.GetAllAsync(
             url,
             x => (JArray)x["workflow_runs"],
-            x => (int)x["workflow_id"] == workflowId && (actor is null || (string)x["actor"]["login"] == actor) && (string)x["head_branch"] == "main",
+            x => (int)x["workflow_id"] == workflowId && (actor is null || (string)x["actor"]["login"] == actor) && (branch is null || (string)x["head_branch"] == branch),
             x => new WorkflowRun
             {
                 Org = org,
@@ -49,8 +49,8 @@ public class GithubApi
                 RunDate = (DateTime)x["created_at"],
                 Conclusion = (string)x["conclusion"],
                 Url = (string)x["html_url"],
-                RunNumber = (int)x["run_number"],
-                Id = (int)x["id"]
+                RunNumber = (long)x["run_number"],
+                Id = (long)x["id"]
             });
 
         return data;

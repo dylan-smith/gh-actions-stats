@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -22,12 +22,12 @@ jobs:
       shell: pwsh
       env:
         CLI_VERSION: ${{ github.ref }}
-        SKIP_WINDOWS: true
+        SKIP_LINUX: true
         SKIP_MACOS: true
 
     - name: Run for CLI
-      run: actions-stats-linux-amd64 get-runs --org github --repo gh-gei --workflow-name CI
-      working-directory: ./dist/linux-x64/
+      run: actions-stats-windows-amd64.exe get-runs --org github --repo gh-gei --workflow-name CI
+      working-directory: ./dist/win-x64/
       shell: pwsh
       env:
         GH_PAT: ${{ secrets.CLI_PAT }}

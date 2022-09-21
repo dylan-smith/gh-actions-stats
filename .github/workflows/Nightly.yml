@@ -40,3 +40,22 @@ jobs:
       env:
         GH_PAT: ${{ secrets.CLI_PAT }}
         SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
+        
+    - name: Upload test logs
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: nightly-logs
+        path: dist/**/*.log
+
+    - name: Test Logs
+      if: always()
+      run: Get-ChildItem . -Filter *.octoshift.log -Recurse | ForEach-Object { Get-Content -Path $_.FullName }
+      working-directory: ./dist
+      shell: pwsh
+
+    - name: Test Logs (Verbose)
+      if: always()
+      run: Get-ChildItem . -Filter *.octoshift.verbose.log -Recurse | ForEach-Object { Get-Content -Path $_.FullName }
+      working-directory: ./dist
+      shell: pwsh

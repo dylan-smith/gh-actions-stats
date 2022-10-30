@@ -30,6 +30,7 @@ public static class Program
             .AddSingleton<FileSystemProvider>()
             .AddSingleton<IVersionProvider, VersionChecker>(sp => sp.GetRequiredService<VersionChecker>())
             .AddSingleton<SqlServerServiceFactory>()
+            .AddSingleton<DateTimeProvider>()
             .AddHttpClient();
 
         var serviceProvider = serviceCollection.BuildServiceProvider();

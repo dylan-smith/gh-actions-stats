@@ -11,21 +11,23 @@ public class GithubApiFactory
     private readonly EnvironmentVariableProvider _environmentVariableProvider;
     private readonly RetryPolicy _retryPolicy;
     private readonly IVersionProvider _versionProvider;
+    private readonly DateTimeProvider _dateTimeProvider;
 
-    public GithubApiFactory(OctoLogger octoLogger, HttpClient client, EnvironmentVariableProvider environmentVariableProvider, RetryPolicy retryPolicy, IVersionProvider versionProvider)
+    public GithubApiFactory(OctoLogger octoLogger, HttpClient client, EnvironmentVariableProvider environmentVariableProvider, RetryPolicy retryPolicy, IVersionProvider versionProvider, DateTimeProvider dateTimeProvider)
     {
         _octoLogger = octoLogger;
         _client = client;
         _environmentVariableProvider = environmentVariableProvider;
         _retryPolicy = retryPolicy;
         _versionProvider = versionProvider;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public virtual GithubApi Create(string apiUrl = null, string targetPersonalAccessToken = null)
     {
         apiUrl ??= DEFAULT_API_URL;
         targetPersonalAccessToken ??= _environmentVariableProvider.GithubPersonalAccessToken();
-        var githubClient = new GithubClient(_octoLogger, _client, _versionProvider, _retryPolicy, targetPersonalAccessToken);
+        var githubClient = new GithubClient(_octoLogger, _client, _retryPolicy, _dateTimeProvider, targetPersonalAccessToken);
         return new GithubApi(githubClient, apiUrl, _retryPolicy);
     }
 }

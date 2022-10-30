@@ -33,6 +33,7 @@ public class GithubClient
         {
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", personalAccessToken);
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("gh-actions-stats"));
         }
     }
 

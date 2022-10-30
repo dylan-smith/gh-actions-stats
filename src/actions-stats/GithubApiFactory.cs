@@ -27,7 +27,7 @@ public class GithubApiFactory
     {
         apiUrl ??= DEFAULT_API_URL;
         targetPersonalAccessToken ??= _environmentVariableProvider.GithubPersonalAccessToken();
-        var githubClient = new GithubClient(_octoLogger, _client, _retryPolicy, _dateTimeProvider, targetPersonalAccessToken);
+        var githubClient = new GithubClient(_octoLogger, _client, _retryPolicy, _versionProvider, _dateTimeProvider, targetPersonalAccessToken);
         return new GithubApi(githubClient, apiUrl, _retryPolicy);
     }
 }

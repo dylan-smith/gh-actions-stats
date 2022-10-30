@@ -22,7 +22,7 @@ public class GithubClient
     private const string DEFAULT_RATE_LIMIT_REMAINING = "5000";
     private const int MILLISECONDS_PER_SECOND = 1000;
 
-    public GithubClient(OctoLogger log, HttpClient httpClient, RetryPolicy retryPolicy, DateTimeProvider dateTimeProvider, string personalAccessToken)
+    public GithubClient(OctoLogger log, HttpClient httpClient, RetryPolicy retryPolicy, IVersionProvider versionProvider, DateTimeProvider dateTimeProvider, string personalAccessToken)
     {
         _log = log;
         _httpClient = httpClient;
@@ -33,7 +33,11 @@ public class GithubClient
         {
             _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github.v3+json");
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", personalAccessToken);
-            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("gh-actions-stats"));
+            _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("gh-actions-stats", versionProvider?.GetCurrentVersion()));
+            if (versionProvider?.GetVersionComments() is { } comments)
+            {
+                _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(comments));
+            }
         }
     }
 

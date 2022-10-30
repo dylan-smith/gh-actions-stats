@@ -40,6 +40,7 @@ jobs:
       env:
         GH_PAT: ${{ secrets.CLI_PAT }}
         SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
+        GEI_DEBUG_MODE: 'true'
         
     - name: Upload test logs
       uses: actions/upload-artifact@v2

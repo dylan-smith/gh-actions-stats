@@ -31,7 +31,7 @@ public class GithubApi
 
     public virtual async Task<IEnumerable<WorkflowRun>> GetWorkflowRuns(string org, string repo, long workflowId, string actor, string branch)
     {
-        var url = $"{_apiUrl}/repos/{org}/{repo}/actions/runs";
+        var url = $"{_apiUrl}/repos/{org}/{repo}/actions/workflows/{workflowId}/runs";
 
         var data = await _client.GetAllAsync(
             url,

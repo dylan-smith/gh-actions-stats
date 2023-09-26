@@ -28,7 +28,7 @@ public class GithubApiFactory
         apiUrl ??= DEFAULT_API_URL;
         if (proxima)
         {
-            apiUrl = "https://github.ghe.com";
+            apiUrl = "https://api.github.ghe.com";
         }
         targetPersonalAccessToken ??= _environmentVariableProvider.GithubPersonalAccessToken();
         var githubClient = new GithubClient(_octoLogger, _client, _retryPolicy, _versionProvider, _dateTimeProvider, targetPersonalAccessToken);

@@ -23,9 +23,13 @@ public class GithubApiFactory
         _dateTimeProvider = dateTimeProvider;
     }
 
-    public virtual GithubApi Create(string apiUrl = null, string targetPersonalAccessToken = null)
+    public virtual GithubApi Create(string apiUrl = null, string targetPersonalAccessToken = null, bool proxima = false)
     {
         apiUrl ??= DEFAULT_API_URL;
+        if (proxima)
+        {
+            apiUrl = "https://github.ghe.com";
+        }
         targetPersonalAccessToken ??= _environmentVariableProvider.GithubPersonalAccessToken();
         var githubClient = new GithubClient(_octoLogger, _client, _retryPolicy, _versionProvider, _dateTimeProvider, targetPersonalAccessToken);
         return new GithubApi(githubClient, apiUrl, _retryPolicy);

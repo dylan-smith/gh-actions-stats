@@ -71,6 +71,7 @@ public class GetRunsCommand : Command
             IsRequired = false,
             Description = "SQL Server connection string for where to write the data",
         };
+        var proxima = new Option<bool>("--proxima") { IsRequired = false };
         var verbose = new Option<bool>("--verbose") { IsRequired = false };
 
         AddOption(org);
@@ -82,6 +83,7 @@ public class GetRunsCommand : Command
         AddOption(githubPat);
         AddOption(output);
         AddOption(sqlConnectionString);
+        AddOption(proxima);
         AddOption(verbose);
 
         Handler = CommandHandler.Create<GetRunsCommandArgs>(Invoke);
@@ -107,7 +109,7 @@ public class GetRunsCommand : Command
         _log.RegisterSecret(args.GithubPat);
         _log.RegisterSecret(args.SqlConnectionString);
 
-        var api = _apiFactory.Create(apiUrl: null, args.GithubPat);
+        var api = _apiFactory.Create(apiUrl: null, args.GithubPat, args.Proxima);
 
         if (args.WorkflowName.HasValue())
         {
@@ -256,5 +258,6 @@ public class GetRunsCommandArgs
     public string GithubPat { get; set; }
     public FileInfo Output { get; set; }
     public string SqlConnectionString { get; set; }
+    public bool Proxima { get; set; }
     public bool Verbose { get; set; }
 }

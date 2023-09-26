@@ -34,11 +34,11 @@ jobs:
         SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
 
     - name: Run for Octoshift
-      run: .\actions-stats-windows-amd64.exe get-runs --org github --repo Octoshift --workflow-name "Regression Tests"
+      run: .\actions-stats-windows-amd64.exe get-runs --org github --repo Octoshift --workflow-name "Regression Tests" --proxima
       working-directory: ./dist/win-x64/
       shell: pwsh
       env:
-        GH_PAT: ${{ secrets.CLI_PAT }}
+        GH_PAT: ${{ secrets.OCTOSHIFT_PROXIMA_TOKEN }}
         SQL_CONNECTION_STRING: ${{ secrets.SQL_CONNECTION_STRING }}
         GEI_DEBUG_MODE: 'true'
         
